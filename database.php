@@ -106,7 +106,9 @@ class refnotes_reference_database {
         global $conf;
 
         if (file_exists($conf['indexdir'] . '/page.idx')) {
-            require_once(DOKU_INC . 'inc/indexer.php');
+            if (file_exists(DOKU_INC . 'inc/indexer.php')) {
+                require_once(DOKU_INC . 'inc/indexer.php');
+            }
 
             $pageIndex = idx_getIndex('page', '');
             $namespace = refnotes_configuration::getSetting('reference-db-namespace');
