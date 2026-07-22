@@ -95,6 +95,9 @@ class refnotes_bibtex_lexer extends \dokuwiki\Parsing\Lexer\Lexer {
         // Offset tracking is required by DokuWiki Mort Lexer which doesn't slice the input string
         $offset = 0;
 
+        // Reset the mode stack for DokuWiki Mort lexer
+        $this->modeStack = new \dokuwiki\Parsing\Lexer\StateStack('base');
+
         while (is_array($parsed = $this->reduce($text, $offset))) {
             list($unmatched, $matched, $mode) = $parsed;
             $matchPos = $offset + strlen($unmatched);
