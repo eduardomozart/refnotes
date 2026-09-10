@@ -105,10 +105,34 @@ class refnotes_reference_database {
     private function loadPages() {
         global $conf;
 
-        if (file_exists($conf['indexdir'] . '/page.idx')) {
-            require_once(DOKU_INC . 'inc/indexer.php');
+        $pageIndex = null;
 
+        if (!plugin_isdisabled('sphinxsearchwas')) {
+            $saveDir = $conf['savedir'];
+            if (strpos($saveDir, '/') !== 0 && !preg_match('/^[a-z]:\\\/i', $saveDir)) {
+                $saveDir = DOKU_INC . $saveDir;
+            }
+            $sphinxDbPath = $saveDir . '/sphinxsearchwas/pages.db';
+
+            if (file_exists($sphinxDbPath)) {
+                try {
+                    $sphinxDb = new PDO("sqlite:" . $sphinxDbPath);
+                    $stmt = $sphinxDb->query("SELECT page FROM pages");
+                    if ($stmt) {
+                        $pageIndex = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                    }
+                } catch (PDOException $e) {
+                    // Fall back if DB cannot be read
+                }
+            }
+        }
+
+        if ($pageIndex === null && file_exists($conf['indexdir'] . '/page.idx')) {
+            require_once(DOKU_INC . 'inc/indexer.php');
             $pageIndex = idx_getIndex('page', '');
+        }
+
+        if ($pageIndex !== null) {
             $namespace = refnotes_configuration::getSetting('reference-db-namespace');
             $namespacePattern = '/^' . trim($namespace, ':') . ':/';
             $cache = new refnotes_reference_database_cache();
